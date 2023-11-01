@@ -2,6 +2,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <cmath>
+#include <iomanip>
+
 using namespace std;
 
 class Data{
@@ -35,15 +37,43 @@ public:
 
     void display() {
         cout
-            << "Number: " << number << "    "
-            << "Character: " << character << endl;
+                << "Number: " << number << "    "
+                << "Character: " << character << endl;
     }
+
+    int getHeight(){
+        if (leftNode == nullptr && rightNode == nullptr){
+            return 1;
+        }
+        else if(leftNode != nullptr && rightNode == nullptr){
+            return 1 + leftNode->getHeight();
+        }
+        else if(leftNode == nullptr && rightNode != nullptr){
+            return 1 + rightNode->getHeight();
+        }
+        else{
+            return 1 + max(leftNode->getHeight(), rightNode->getHeight());
+        }
+    }
+
 };
 
 template <class T>
 class BST{
 public:
-    T* rootNode = nullptr;
+    int numberOfNodes = {};
+    int treeHeight = {};
+    T* rootNode = {};
+    T* inOrderList = {};
+    T* preOrderList = {};
+
+    BST(){
+        numberOfNodes = 0;
+        treeHeight = 0;
+        rootNode = nullptr;
+        inOrderList = new T[numberOfNodes];
+        preOrderList = new T[numberOfNodes];
+    }
 
     bool checkIfEmpty(){
         return rootNode == nullptr ? true : false;
@@ -53,6 +83,64 @@ public:
         return node->parentNode->leftNode == node ? false : true;
     }
 
+    int getTreeHeight(){
+        return (rootNode == nullptr) ? 0 : rootNode->getHeight();
+    }
+
+    void preOrderTraversal(T* currentNode){
+        if (currentNode == nullptr){
+            return;
+        }
+        cout << currentNode->number << endl;
+        preOrderTraversal(currentNode->leftNode);
+        preOrderTraversal(currentNode->rightNode);
+    }
+
+    T* preOrderSuccessor(T* node){
+
+    }
+
+    void inOrderTraversal(T* currentNode){
+        if (currentNode == nullptr){
+            return;
+        }
+        inOrderTraversal(currentNode->leftNode);
+        cout << currentNode->number << endl;
+        inOrderTraversal(currentNode->rightNode);
+    }
+
+    T* inOrderSuccessor(T* node){
+        T* currentNode = rootNode;
+        T* successorNode;
+        while(!currentNode && currentNode->compare(node) != 0){
+            if(currentNode->compare(node) == -1) {
+                currentNode = currentNode->leftNode;
+            }
+            else {
+                currentNode = currentNode->rightNode;
+            }
+        }
+
+        if (!currentNode){
+            return nullptr;
+        }
+
+        if (currentNode->rightNode){
+            successorNode = currentNode->rightNode;
+            while(successorNode->leftNode){
+                successorNode = successorNode->leftNode;
+            }
+            return successorNode;
+        }
+        else{
+            while(currentNode->parentNode && currentNode->parentNode->leftNode){
+                currentNode = currentNode->parentNode;
+            }
+            return currentNode->parentNode;
+        }
+
+    }
+
     void addRootNode(T* newNode){
         rootNode = newNode;
     }
@@ -60,6 +148,7 @@ public:
     bool addNewNode(T* newNode){
         if(checkIfEmpty()){
             addRootNode(newNode);
+            numberOfNodes++;
             return true;
         }
         else {
@@ -85,6 +174,7 @@ public:
             else{
                 previousNode->leftNode= newNode;
             }
+            numberOfNodes++;
             return true;
         }
     }
@@ -126,13 +216,10 @@ public:
     }
 
     bool removeNodeWithBothChildren(T* nodeToRemove){
-        T* parent = nodeToRemove->parentNode;
-        T* rotateNode;
-        if(checkIfRightOrLeft(nodeToRemove)){
-
-        }
-        else{
-
+        T* successorNode = inOrderSuccessor(nodeToRemove->rightNode);
+        T* parentNode = nodeToRemove->parentNode;
+        if(nodeToRemove == parentNode->leftNode){
+            
         }
     }
 
@@ -159,6 +246,13 @@ public:
         }
     }
 
+    T* findMinimum(T* currentNode){
+        while(currentNode->leftNode != nullptr){
+            currentNode = currentNode->leftNode;
+        }
+        return currentNode;
+    }
+
     bool findAndRemoveNode(T* node){
         T* nodeToRemove = findNode(node);
         if (nodeToRemove == nullptr) {
@@ -178,17 +272,18 @@ public:
 
     void printTreeInfo(){
         T* currentNode = rootNode;
-        for (int i = 0; i < 100; ++i) {
-            currentNode->display();
-            if(currentNode-> leftNode != nullptr){
-                currentNode = currentNode->leftNode;
-            }
-            else if(currentNode->rightNode != nullptr){
-                currentNode = currentNode->rightNode;
-            }
-            else{
-                break;
-            }
+        for (int i = 0; i < 50; ++i) {
+
+        }
+    }
+
+    void display(T *currentNode, int indent) {
+        if (currentNode != nullptr) {
+            Display(currentNode->leftNode, indent + 1);
+            if (indent > 0)
+                cout << setw(indent) << " ";
+            cout << currentNode->number << endl;
+            Display(currentNode->rightNode, indent + 1);
         }
     }
 
@@ -202,9 +297,14 @@ int main(){
 
     class BST<Data>* tree = new BST<Data>;
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 10; ++i) {
         class Data* newNode = new Data();
         tree->addNewNode(newNode);
     }
+
+    tree->inOrderTraversal(tree->rootNode);
+    cout << "=============" << endl;
+    tree->preOrderTraversal(tree->rootNode);
+
     return 0;
 }
